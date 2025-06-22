@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Keuangan Resto</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e1e2f;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .card {
+      background: #2a2a3d;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    h1, h2 {
+      color: #00ffff;
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #0080ff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .grid > div {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .uang {
+      font-family: monospace;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .link-riwayat {
+      display: inline-block;
+      background: #00ccff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📘 Aplikasi Keuangan Resto</h1>
+
+  <div class="card">
+    <form method="POST">
+      <label>Jenis Transaksi:</label>
+      <select name="tipe">
+        <option value="Pemasukan">Pemasukan</option>
+        <option value="Pengeluaran">Pengeluaran</option>
+      </select>
+
+      <label>Nominal:</label>
+      <input name="jumlah" type="text" placeholder="Contoh: 100.50">
+
+      <label>Mata Uang:</label>
+      <select name="mata_uang">
+        {% for m in mata_uang %}
+        <option value="{{ m }}">{{ m }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Deskripsi:</label>
+      <textarea name="deskripsi" rows="2"></textarea>
+
+      <button type="submit">💾 Simpan Transaksi</button>
+    </form>
+
+    <a href="/riwayat" class="link-riwayat">📋 Lihat Riwayat Transaksi Hari Ini</a>
+    <a href="/history" class="link-riwayat" style="background:#ff9900;">📖 Lihat Semua Transaksi (History)</a>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>📊 Ringkasan Hari Ini</h2>
+      {% for m in mata_uang %}
+        <div class="uang">
+          <b>{{ m }}:</b><br>
+          + Pemasukan   : {{ pemasukan[m]|default(0) }}<br>
+          - Pengeluaran : {{ pengeluaran[m]|default(0) }}<br>
+          💰 Omset      : {{ omset[m]|default(0) }}<br><br>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h2>💰 Saldo Utama (IDR)</h2>
+      <p class="uang">Rp {{ "{:,.2f}".format(saldo) }}</p>
+
+      <h2 style="margin-top:30px;">💳 Saldo per Mata Uang</h2>
+      <div class="uang">
+        USD: {{ saldo_per_mata_uang['USD']|default(0)|round(2) }}<br>
+        IDR : {{ saldo_per_mata_uang['IDR']|default(0)|round(2) }}<br>
+        KHR : {{ saldo_per_mata_uang['KHR']|default(0)|round(2) }}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

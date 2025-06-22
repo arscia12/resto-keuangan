@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Riwayat Hari Ini</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { background: #1e1e2f; color: #fff; font-family: Arial; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #444; padding: 10px; text-align: left; }
+    th { background: #0080ff; color: #fff; }
+    a.button {
+      background: #00ccff; padding: 10px 20px; color: white;
+      text-decoration: none; border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📋 Riwayat Transaksi Hari Ini</h1>
+
+  <a href="/" class="button">⬅️ Kembali</a>
+  <a href="/download" class="button" style="margin-left: 10px;">⬇️ Download Excel</a>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Tipe</th>
+        <th>Deskripsi</th>
+        <th>Mata Uang</th>
+        <th>Jumlah</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
+      <tr>
+        <td>{{ row['Tanggal'] }}</td>
+        <td>{{ row['Tipe'] }}</td>
+        <td>{{ row['Deskripsi'] }}</td>
+        <td>{{ row['Mata Uang'] }}</td>
+        <td>{{ row['Jumlah'] }}</td>
+      </tr>
+      {% endfor %}
+      {% if not data %}
+      <tr><td colspan="5">Tidak ada transaksi hari ini.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</body>
+</html>

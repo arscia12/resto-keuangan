@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>History Transaksi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { background: #1e1e2f; color: #fff; font-family: Arial; padding: 20px; }
+    h1 { color: #00ffff; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: left;
+    }
+    th { background: #0080ff; color: white; }
+    a.button {
+      background: #00ccff; padding: 10px 20px; color: white;
+      text-decoration: none; border-radius: 6px; display: inline-block;
+      margin-bottom: 15px;
+    }
+    .section { margin-top: 40px; }
+    @media (max-width: 600px) {
+      table, th, td { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>📖 History Transaksi</h1>
+
+  <a href="/" class="button">⬅️ Kembali ke Dashboard</a>
+
+  <div class="section">
+    <h2>📊 Ringkasan Per Hari</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>USD +</th><th>USD -</th>
+          <th>IDR +</th><th>IDR -</th>
+          <th>KHR +</th><th>KHR -</th>
+          <th>Omset IDR</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rekap %}
+        <tr>
+          <td>{{ r.tanggal }}</td>
+          <td>{{ r.USD_in|round(2) }}</td>
+          <td>{{ r.USD_out|round(2) }}</td>
+          <td>{{ r.IDR_in|round(2) }}</td>
+          <td>{{ r.IDR_out|round(2) }}</td>
+          <td>{{ r.KHR_in|round(2) }}</td>
+          <td>{{ r.KHR_out|round(2) }}</td>
+          <td>Rp {{ "{:,.0f}".format(r.omset_idr) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>📋 Semua Transaksi</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Tipe</th>
+          <th>Deskripsi</th>
+          <th>Mata Uang</th>
+          <th>Jumlah</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+        <tr>
+          <td>{{ row['Tanggal'] }}</td>
+          <td>{{ row['Tipe'] }}</td>
+          <td>{{ row['Deskripsi'] }}</td>
+          <td>{{ row['Mata Uang'] }}</td>
+          <td>{{ row['Jumlah'] }}</td>
+        </tr>
+        {% endfor %}
+        {% if not data %}
+        <tr><td colspan="5">Belum ada transaksi disimpan.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

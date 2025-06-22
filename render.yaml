@@ -1,0 +1,6 @@
+services:
+  - type: web                     # Jenis layanan (web = aplikasi yang punya URL)
+    name: keuangan-resto          # Nama project (boleh ganti)
+    env: python                   # Gunakan Python environment
+    buildCommand: ""              # Tidak perlu build step (kosongin saja)
+    startCommand: python app.py   # Jalankan aplikasi pakai perintah ini

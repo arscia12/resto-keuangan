@@ -10,16 +10,6 @@ app = Flask(__name__)
 FILE_CSV = 'keuangan.csv'
 MATA_UANG = ['USD', 'IDR', 'KHR']
 
-def format_angka(value):
-    try:
-        value = float(value)
-        parts = f"{value:,.2f}".split(".")
-        angka = parts[0].replace(",", ".")
-        desimal = parts[1]
-        return f"{angka},{desimal}"
-    except:
-        return value
-
 def buat_file():
     if not os.path.exists(FILE_CSV):
         with open(FILE_CSV, 'w', newline='') as f:
@@ -87,6 +77,9 @@ def get_transaksi_hari_ini():
                     rows.append(row)
     return rows
 
+def format_angka(nilai):
+    return f"{nilai:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     buat_file()
@@ -110,7 +103,9 @@ def index():
                            omset={k: format_angka(v) for k, v in omset.items()},
                            saldo=format_angka(saldo),
                            saldo_per_mata_uang={k: format_angka(v) for k, v in saldo_per_mata_uang().items()},
-                           mata_uang=MATA_UANG)
+                           get_transaksi_hari_ini=get_transaksi_hari_ini,
+                           mata_uang=MATA_UANG,
+                           tanggal=datetime.now().strftime('%Y-%m-%d'))
 
 @app.route('/riwayat')
 def riwayat():

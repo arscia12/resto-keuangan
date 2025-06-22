@@ -10,6 +10,16 @@ app = Flask(__name__)
 FILE_CSV = 'keuangan.csv'
 MATA_UANG = ['USD', 'IDR', 'KHR']
 
+def format_angka(value):
+    try:
+        value = float(value)
+        parts = f"{value:,.2f}".split(".")
+        angka = parts[0].replace(",", ".")
+        desimal = parts[1]
+        return f"{angka},{desimal}"
+    except:
+        return value
+
 def buat_file():
     if not os.path.exists(FILE_CSV):
         with open(FILE_CSV, 'w', newline='') as f:
@@ -95,11 +105,11 @@ def index():
     pemasukan, pengeluaran, omset = ringkasan_hari_ini()
     saldo = saldo_utama()
     return render_template('index.html',
-                           pemasukan=pemasukan,
-                           pengeluaran=pengeluaran,
-                           omset=omset,
-                           saldo=saldo,
-                           saldo_per_mata_uang=saldo_per_mata_uang(),
+                           pemasukan={k: format_angka(v) for k, v in pemasukan.items()},
+                           pengeluaran={k: format_angka(v) for k, v in pengeluaran.items()},
+                           omset={k: format_angka(v) for k, v in omset.items()},
+                           saldo=format_angka(saldo),
+                           saldo_per_mata_uang={k: format_angka(v) for k, v in saldo_per_mata_uang().items()},
                            mata_uang=MATA_UANG)
 
 @app.route('/riwayat')
@@ -155,7 +165,6 @@ def history():
                 elif tipe == 'pengeluaran':
                     summary[tanggal][f"{mata_uang}_out"] += jumlah
 
-    # Hitung omset total IDR per hari
     rekap = []
     for tanggal in sorted(summary):
         s = summary[tanggal]
@@ -165,7 +174,7 @@ def history():
             (s['KHR_in'] - s['KHR_out']) * kurs['KHR']
         )
         s['tanggal'] = tanggal
-        s['omset_idr'] = omset_idr
+        s['omset_idr'] = format_angka(omset_idr)
         rekap.append(s)
 
     return render_template('history.html', data=rows, rekap=rekap)
@@ -173,4 +182,3 @@ def history():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
-

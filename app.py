@@ -167,17 +167,14 @@ def download_excel():
 @app.route('/hapus', methods=['POST'])
 def hapus():
     id_transaksi = request.form.get('id')
-    referer = request.headers.get("Referer", "/")
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM transaksi WHERE id = %s", (id_transaksi,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect(request.referrer)
 
-    if id_transaksi:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute("DELETE FROM transaksi WHERE id = %s", (id_transaksi,))
-        conn.commit()
-        cur.close()
-        conn.close()
-
-    return redirect(referer)
 
 def buat_table_transaksi():
     conn = get_connection()

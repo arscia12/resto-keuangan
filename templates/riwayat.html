@@ -31,13 +31,9 @@
           <td>{{ row['Mata Uang'] }}</td>
           <td>{{ row['Jumlah']|format_angka }}</td>
           <td>
-            <form method="POST" action="/hapus">
-              <input type="hidden" name="tanggal" value="{{ row['Tanggal'] }}">
-              <input type="hidden" name="tipe" value="{{ row['Tipe'] }}">
-              <input type="hidden" name="deskripsi" value="{{ row['Deskripsi'] }}">
-              <input type="hidden" name="mata_uang" value="{{ row['Mata Uang'] }}">
-              <input type="hidden" name="jumlah" value="{{ row['Jumlah'] }}">
-              <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+            <form action="/hapus" method="POST">
+              <input type="hidden" name="id" value="{{ row['ID'] }}">
+              <button class="btn btn-danger btn-sm">Hapus</button>
             </form>
           </td>
         </tr>

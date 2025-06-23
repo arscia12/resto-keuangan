@@ -46,11 +46,11 @@ def get_transaksi_hari_ini():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT tanggal, tipe, deskripsi, mata_uang, jumlah
+        SELECT id, tanggal, tipe, deskripsi, mata_uang, jumlah
         FROM transaksi WHERE tanggal = %s
     """, (tanggal,))
     rows = [
-        {'Tanggal': r[0], 'Tipe': r[1], 'Deskripsi': r[2], 'Mata Uang': r[3], 'Jumlah': r[4]}
+        {'id': r[0], 'Tanggal': r[1], 'Tipe': r[2], 'Deskripsi': r[3], 'Mata Uang': r[4], 'Jumlah': r[5]}
         for r in cur.fetchall()
     ]
     cur.close()
@@ -60,9 +60,9 @@ def get_transaksi_hari_ini():
 def get_semua_transaksi():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT tanggal, tipe, deskripsi, mata_uang, jumlah FROM transaksi")
+    cur.execute("SELECT id, tanggal, tipe, deskripsi, mata_uang, jumlah FROM transaksi")
     rows = [
-        {'Tanggal': r[0], 'Tipe': r[1], 'Deskripsi': r[2], 'Mata Uang': r[3], 'Jumlah': r[4]}
+        {'id': r[0], 'Tanggal': r[1], 'Tipe': r[2], 'Deskripsi': r[3], 'Mata Uang': r[4], 'Jumlah': r[5]}
         for r in cur.fetchall()
     ]
     cur.close()
@@ -178,7 +178,6 @@ def hapus():
         conn.close()
 
     return redirect(referer)
-
 
 def buat_table_transaksi():
     conn = get_connection()

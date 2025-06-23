@@ -1,94 +1,102 @@
 from flask import Flask, render_template, request, redirect, send_file
 from datetime import datetime
-import csv
-import os
 from collections import defaultdict
 import openpyxl
 from openpyxl.utils import get_column_letter
+import psycopg2
+import os
 
 app = Flask(__name__)
-FILE_CSV = 'keuangan.csv'
 MATA_UANG = ['USD', 'IDR', 'KHR']
 
-# ✅ Tambahkan filter angka gaya Indonesia
+# Format angka gaya Indonesia
 def format_angka(value):
     try:
-        return "{:,.2f}".format(float(value)).replace(',', 'X').replace('.', ',').replace('X', '.')
+        return "{:,.2f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
     except:
         return value
 
 app.jinja_env.filters['format_angka'] = format_angka
 
-def buat_file():
-    if not os.path.exists(FILE_CSV):
-        with open(FILE_CSV, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Tanggal', 'Tipe', 'Deskripsi', 'Mata Uang', 'Jumlah'])
+# Koneksi ke PostgreSQL
+DB_PARAMS = {
+    'dbname': 'keuangan',
+    'user': 'admin',
+    'password': os.environ.get('DB_PASSWORD'),
+    'host': 'dpg-d1cgko6uk2gs73an2t50-a',  # ganti dengan hostmu
+    'port': 5432
+}
+
+def get_connection():
+    return psycopg2.connect(**DB_PARAMS)
 
 def simpan_transaksi(tipe, deskripsi, mata_uang, jumlah):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO transaksi (tanggal, tipe, deskripsi, mata_uang, jumlah)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (datetime.now().strftime('%Y-%m-%d'), tipe, deskripsi, mata_uang, jumlah))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def get_transaksi_hari_ini():
     tanggal = datetime.now().strftime('%Y-%m-%d')
-    with open(FILE_CSV, 'a', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow([tanggal, tipe, deskripsi, mata_uang, jumlah])
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT tanggal, tipe, deskripsi, mata_uang, jumlah
+        FROM transaksi WHERE tanggal = %s
+    """, (tanggal,))
+    rows = [
+        {'Tanggal': r[0], 'Tipe': r[1], 'Deskripsi': r[2], 'Mata Uang': r[3], 'Jumlah': r[4]}
+        for r in cur.fetchall()
+    ]
+    cur.close()
+    conn.close()
+    return rows
 
 def ringkasan_hari_ini():
     tanggal = datetime.now().strftime('%Y-%m-%d')
     pemasukan = defaultdict(float)
     pengeluaran = defaultdict(float)
 
-    if not os.path.exists(FILE_CSV):
-        return {}, {}, {}
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT tipe, mata_uang, jumlah FROM transaksi WHERE tanggal = %s", (tanggal,))
+    for tipe, mata_uang, jumlah in cur.fetchall():
+        if tipe.lower() == 'pemasukan':
+            pemasukan[mata_uang] += jumlah
+        else:
+            pengeluaran[mata_uang] += jumlah
+    cur.close()
+    conn.close()
 
-    with open(FILE_CSV, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row['Tanggal'] == tanggal:
-                jumlah = float(row['Jumlah'])
-                if row['Tipe'].lower() == 'pemasukan':
-                    pemasukan[row['Mata Uang']] += jumlah
-                else:
-                    pengeluaran[row['Mata Uang']] += jumlah
-
-    omset = {mata: pemasukan[mata] - pengeluaran[mata] for mata in MATA_UANG}
+    omset = {mu: pemasukan[mu] - pengeluaran[mu] for mu in MATA_UANG}
     return pemasukan, pengeluaran, omset
 
 def saldo_per_mata_uang():
     saldo = defaultdict(float)
-
-    if not os.path.exists(FILE_CSV):
-        return {mu: 0 for mu in MATA_UANG}
-
-    with open(FILE_CSV, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            jumlah = float(row['Jumlah'])
-            if row['Tipe'].lower() == 'pemasukan':
-                saldo[row['Mata Uang']] += jumlah
-            elif row['Tipe'].lower() == 'pengeluaran':
-                saldo[row['Mata Uang']] -= jumlah
-
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT tipe, mata_uang, jumlah FROM transaksi")
+    for tipe, mata_uang, jumlah in cur.fetchall():
+        if tipe.lower() == 'pemasukan':
+            saldo[mata_uang] += jumlah
+        else:
+            saldo[mata_uang] -= jumlah
+    cur.close()
+    conn.close()
     return saldo
 
 def saldo_utama():
     kurs = {'USD': 15500, 'KHR': 3.8, 'IDR': 1}
     saldo = saldo_per_mata_uang()
-    total_idr = sum(saldo[m] * kurs[m] for m in MATA_UANG)
-    return total_idr
-
-def get_transaksi_hari_ini():
-    tanggal = datetime.now().strftime('%Y-%m-%d')
-    rows = []
-    if os.path.exists(FILE_CSV):
-        with open(FILE_CSV, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row['Tanggal'] == tanggal:
-                    rows.append(row)
-    return rows
+    return sum(saldo[m] * kurs[m] for m in MATA_UANG)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    buat_file()
     if request.method == 'POST':
         tipe = request.form['tipe']
         deskripsi = request.form['deskripsi']
@@ -139,67 +147,25 @@ def download_excel():
     wb.save(nama_file)
     return send_file(nama_file, as_attachment=True)
 
-@app.route('/hapus', methods=['POST'])
-def hapus():
-    target = {
-        'Tanggal': request.form['tanggal'],
-        'Tipe': request.form['tipe'],
-        'Deskripsi': request.form['deskripsi'],
-        'Mata Uang': request.form['mata_uang'],
-        'Jumlah': request.form['jumlah'],
-    }
-
-    if os.path.exists(FILE_CSV):
-        with open(FILE_CSV, 'r') as f:
-            rows = list(csv.DictReader(f))
-        with open(FILE_CSV, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=rows[0].keys())
-            writer.writeheader()
-            for row in rows:
-                if not all(str(row[k]) == str(target[k]) for k in target):
-                    writer.writerow(row)
-
-    return redirect('/riwayat')
-
-@app.route('/history')
-def history():
-    rows = []
-    summary = defaultdict(lambda: {
-        'USD_in': 0, 'USD_out': 0,
-        'IDR_in': 0, 'IDR_out': 0,
-        'KHR_in': 0, 'KHR_out': 0
-    })
-    kurs = {'USD': 15500, 'KHR': 3.8, 'IDR': 1}
-
-    if os.path.exists(FILE_CSV):
-        with open(FILE_CSV, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                rows.append(row)
-                tanggal = row['Tanggal']
-                jumlah = float(row['Jumlah'])
-                mata_uang = row['Mata Uang']
-                tipe = row['Tipe'].lower()
-
-                if tipe == 'pemasukan':
-                    summary[tanggal][f"{mata_uang}_in"] += jumlah
-                elif tipe == 'pengeluaran':
-                    summary[tanggal][f"{mata_uang}_out"] += jumlah
-
-    rekap = []
-    for tanggal in sorted(summary):
-        s = summary[tanggal]
-        omset_idr = (
-            (s['USD_in'] - s['USD_out']) * kurs['USD'] +
-            (s['IDR_in'] - s['IDR_out']) * kurs['IDR'] +
-            (s['KHR_in'] - s['KHR_out']) * kurs['KHR']
+# Auto create table saat run pertama kali
+def buat_table_transaksi():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS transaksi (
+            id SERIAL PRIMARY KEY,
+            tanggal DATE,
+            tipe VARCHAR(20),
+            deskripsi TEXT,
+            mata_uang VARCHAR(5),
+            jumlah FLOAT
         )
-        s['tanggal'] = tanggal
-        s['omset_idr'] = omset_idr
-        rekap.append(s)
-
-    return render_template('history.html', data=rows, rekap=rekap)
+    """)
+    conn.commit()
+    cur.close()
+    conn.close()
 
 if __name__ == '__main__':
+    buat_table_transaksi()
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

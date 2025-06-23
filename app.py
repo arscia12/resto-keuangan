@@ -77,9 +77,6 @@ def get_transaksi_hari_ini():
                     rows.append(row)
     return rows
 
-def format_angka(nilai):
-    return f"{nilai:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     buat_file()
@@ -98,14 +95,12 @@ def index():
     pemasukan, pengeluaran, omset = ringkasan_hari_ini()
     saldo = saldo_utama()
     return render_template('index.html',
-                           pemasukan={k: format_angka(v) for k, v in pemasukan.items()},
-                           pengeluaran={k: format_angka(v) for k, v in pengeluaran.items()},
-                           omset={k: format_angka(v) for k, v in omset.items()},
-                           saldo=format_angka(saldo),
-                           saldo_per_mata_uang={k: format_angka(v) for k, v in saldo_per_mata_uang().items()},
-                           get_transaksi_hari_ini=get_transaksi_hari_ini,
-                           mata_uang=MATA_UANG,
-                           tanggal=datetime.now().strftime('%Y-%m-%d'))
+                           pemasukan=pemasukan,
+                           pengeluaran=pengeluaran,
+                           omset=omset,
+                           saldo=saldo,
+                           saldo_per_mata_uang=saldo_per_mata_uang(),
+                           mata_uang=MATA_UANG)
 
 @app.route('/riwayat')
 def riwayat():
@@ -160,6 +155,7 @@ def history():
                 elif tipe == 'pengeluaran':
                     summary[tanggal][f"{mata_uang}_out"] += jumlah
 
+    # Hitung omset total IDR per hari
     rekap = []
     for tanggal in sorted(summary):
         s = summary[tanggal]
@@ -169,11 +165,10 @@ def history():
             (s['KHR_in'] - s['KHR_out']) * kurs['KHR']
         )
         s['tanggal'] = tanggal
-        s['omset_idr'] = format_angka(omset_idr)
+        s['omset_idr'] = omset_idr
         rekap.append(s)
 
     return render_template('history.html', data=rows, rekap=rekap)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True)

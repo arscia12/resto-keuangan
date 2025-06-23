@@ -1,154 +1,145 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <!-- trigger build ulang render.com 2025-06-22 -->
-    <meta charset="UTF-8">
-    <title>Keuangan Resto Harian</title>
-    <style>
-        body {
-            background-color: #1a1a2e;
-            color: #f0f0f0;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            display: flex;
-            gap: 40px;
-            flex-wrap: wrap;
-        }
-        .form-section, .ringkasan-section {
-            flex: 1;
-            min-width: 320px;
-        }
-        .form-box {
-            background-color: #2e2e48;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .form-box h2 {
-            color: #00d9ff;
-            margin-top: 0;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 6px;
-            margin-top: 5px;
-            border-radius: 5px;
-            border: none;
-        }
-        button {
-            margin-top: 15px;
-            padding: 10px;
-            width: 100%;
-            background-color: #007bff;
-            color: white;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #2e2e48;
-            color: white;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        th, td {
-            border: 1px solid #444;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #005f73;
-        }
-        .section-title {
-            margin: 20px 0 10px;
-            color: #00f7ff;
-            font-size: 1.2em;
-        }
-        .uang {
-            font-weight: bold;
-            color: #ffc107;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Keuangan Resto</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e1e2f;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .card {
+      background: #2a2a3d;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    h1, h2 {
+      color: #00ffff;
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #0080ff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .grid > div {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .uang {
+      font-family: monospace;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .link-riwayat {
+      display: inline-block;
+      background: #00ccff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>📅 Tanggal: {{ tanggal }}</h1>
-    <div class="container">
-        <div class="form-section">
-            <div class="form-box">
-                <h2>Tambah Transaksi</h2>
-                <form method="POST">
-                    <label for="deskripsi">Deskripsi:</label>
-                    <input type="text" name="deskripsi" required>
+  <h1>📘 Aplikasi Keuangan Resto</h1>
 
-                    <label for="tipe">Tipe:</label>
-                    <select name="tipe">
-                        <option value="Pemasukan">Pemasukan</option>
-                        <option value="Pengeluaran">Pengeluaran</option>
-                    </select>
+  <div class="card">
+    <form method="POST">
+      <label>Jenis Transaksi:</label>
+      <select name="tipe">
+        <option value="Pemasukan">Pemasukan</option>
+        <option value="Pengeluaran">Pengeluaran</option>
+      </select>
 
-                    <label for="mata_uang">Mata Uang:</label>
-                    <select name="mata_uang">
-                        {% for mu in mata_uang %}
-                        <option value="{{ mu }}">{{ mu }}</option>
-                        {% endfor %}
-                    </select>
+      <label>Nominal:</label>
+      <input name="jumlah" type="text" placeholder="Contoh: 100.50">
 
-                    <label for="jumlah">Jumlah:</label>
-                    <input type="text" name="jumlah" required>
+      <label>Mata Uang:</label>
+      <select name="mata_uang">
+        {% for m in mata_uang %}
+        <option value="{{ m }}">{{ m }}</option>
+        {% endfor %}
+      </select>
 
-                    <button type="submit">➕ Tambah Transaksi</button>
-                </form>
-            </div>
+      <label>Deskripsi:</label>
+      <textarea name="deskripsi" rows="2"></textarea>
 
-            <div class="section-title">📄 Riwayat Transaksi Hari Ini</div>
-            <table>
-                <tr>
-                    <th>Deskripsi</th>
-                    <th>Tipe</th>
-                    <th>Mata Uang</th>
-                    <th>Jumlah</th>
-                </tr>
-                {% for row in get_transaksi_hari_ini() %}
-                <tr>
-                    <td>{{ row['Deskripsi'] }}</td>
-                    <td>{{ row['Tipe'] }}</td>
-                    <td>{{ row['Mata Uang'] }}</td>
-                    <td>{{ row['Jumlah'] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-            <br>
-            <a href="/download">⬇️ Download Excel</a>
-            <br>
-            <a href="/history">📚 Lihat History</a>
+      <button type="submit">💾 Simpan Transaksi</button>
+    </form>
+
+    <a href="/riwayat" class="link-riwayat">📋 Lihat Riwayat Transaksi Hari Ini</a>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>📊 Ringkasan Hari Ini</h2>
+      {% for m in mata_uang %}
+        <div class="uang">
+          <b>{{ m }}:</b><br>
+          + Pemasukan   : {{ pemasukan[m]|default(0) }}<br>
+          - Pengeluaran : {{ pengeluaran[m]|default(0) }}<br>
+          💰 Omset      : {{ omset[m]|default(0) }}<br><br>
         </div>
-
-        <div class="ringkasan-section">
-            <div class="section-title">📊 Ringkasan Hari Ini</div>
-            {% for mu in mata_uang %}
-                <p>{{ mu }}:<br>
-                + Pemasukan : {{ pemasukan.get(mu, '0,00') }}<br>
-                - Pengeluaran : {{ pengeluaran.get(mu, '0,00') }}<br>
-                💰 Omset : {{ omset.get(mu, '0,00') }}</p>
-            {% endfor %}
-
-            <div class="section-title">💰 Saldo Utama (IDR)</div>
-            <p class="uang">Rp {{ saldo }}</p>
-
-            <div class="section-title">💳 Saldo per Mata Uang</div>
-            {% for mu in mata_uang %}
-                <p>{{ mu }} : {{ saldo_per_mata_uang[mu] }}</p>
-            {% endfor %}
-        </div>
+      {% endfor %}
     </div>
+
+    <div class="card">
+      <h2>💰 Saldo Utama (IDR)</h2>
+      <p class="uang">Rp {{ "{:,.2f}".format(saldo) }}</p>
+
+      <h2 style="margin-top:30px;">💳 Saldo per Mata Uang</h2>
+      <div class="uang">
+        USD: {{ saldo_per_mata_uang['USD']|default(0)|round(2) }}<br>
+        IDR : {{ saldo_per_mata_uang['IDR']|default(0)|round(2) }}<br>
+        KHR : {{ saldo_per_mata_uang['KHR']|default(0)|round(2) }}
+      </div>
+    </div>
+  </div>
 </body>
 </html>

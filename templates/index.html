@@ -114,6 +114,7 @@
     </form>
 
     <a href="/riwayat" class="link-riwayat">📋 Lihat Riwayat Transaksi Hari Ini</a>
+    <a href="/history" class="link-riwayat" style="background:#ff9900;">📖 Lihat Semua Transaksi (History)</a>
   </div>
 
   <div class="grid">
@@ -122,22 +123,22 @@
       {% for m in mata_uang %}
         <div class="uang">
           <b>{{ m }}:</b><br>
-          + Pemasukan   : {{ pemasukan[m]|default(0)|float|round(2)|string|replace('.', ',') }}<br>
-          - Pengeluaran : {{ pengeluaran[m]|default(0)|float|round(2)|string|replace('.', ',') }}<br>
-          💰 Omset      : {{ omset[m]|default(0)|float|round(2)|string|replace('.', ',') }}<br><br>
+          + Pemasukan   : {{ pemasukan[m]|default(0)|format_angka }}<br>
+          - Pengeluaran : {{ pengeluaran[m]|default(0)|format_angka }}<br>
+          💰 Omset      : {{ omset[m]|default(0)|format_angka }}<br><br>
         </div>
       {% endfor %}
     </div>
 
     <div class="card">
       <h2>💰 Saldo Utama (IDR)</h2>
-      <p class="uang">Rp {{ '{:,.2f}'.format(saldo).replace(',', 'X').replace('.', ',').replace('X', '.') }}</p>
+      <p class="uang">Rp {{ saldo|format_angka }}</p>
 
       <h2 style="margin-top:30px;">💳 Saldo per Mata Uang</h2>
       <div class="uang">
-        USD: {{ saldo_per_mata_uang['USD']|default(0)|float|round(2)|string|replace('.', ',') }}<br>
-        IDR : {{ saldo_per_mata_uang['IDR']|default(0)|float|round(2)|string|replace('.', ',') }}<br>
-        KHR : {{ saldo_per_mata_uang['KHR']|default(0)|float|round(2)|string|replace('.', ',') }}
+        USD: {{ saldo_per_mata_uang['USD']|default(0)|format_angka }}<br>
+        IDR : {{ saldo_per_mata_uang['IDR']|default(0)|format_angka }}<br>
+        KHR : {{ saldo_per_mata_uang['KHR']|default(0)|format_angka }}
       </div>
     </div>
   </div>

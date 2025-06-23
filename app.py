@@ -10,6 +10,13 @@ app = Flask(__name__)
 FILE_CSV = 'keuangan.csv'
 MATA_UANG = ['USD', 'IDR', 'KHR']
 
+@app.template_filter('format_angka')
+def format_angka(value):
+    try:
+        return "{:,.2f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
+    except:
+        return value
+
 def buat_file():
     if not os.path.exists(FILE_CSV):
         with open(FILE_CSV, 'w', newline='') as f:
@@ -100,7 +107,8 @@ def index():
                            omset=omset,
                            saldo=saldo,
                            saldo_per_mata_uang=saldo_per_mata_uang(),
-                           mata_uang=MATA_UANG)
+                           mata_uang=MATA_UANG,
+                           tanggal=datetime.now().strftime('%Y-%m-%d'))
 
 @app.route('/riwayat')
 def riwayat():
@@ -155,7 +163,6 @@ def history():
                 elif tipe == 'pengeluaran':
                     summary[tanggal][f"{mata_uang}_out"] += jumlah
 
-    # Hitung omset total IDR per hari
     rekap = []
     for tanggal in sorted(summary):
         s = summary[tanggal]

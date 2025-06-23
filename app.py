@@ -10,6 +10,15 @@ app = Flask(__name__)
 FILE_CSV = 'keuangan.csv'
 MATA_UANG = ['USD', 'IDR', 'KHR']
 
+# ✅ Tambahkan filter angka gaya Indonesia
+def format_angka(value):
+    try:
+        return "{:,.2f}".format(float(value)).replace(',', 'X').replace('.', ',').replace('X', '.')
+    except:
+        return value
+
+app.jinja_env.filters['format_angka'] = format_angka
+
 def buat_file():
     if not os.path.exists(FILE_CSV):
         with open(FILE_CSV, 'w', newline='') as f:

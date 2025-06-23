@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Halaman Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e1e2f;
+      color: white;
+      padding: 20px;
+    }
+    h1 {
+      color: #00ffff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #2a2a3d;
+      color: white;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #0080ff;
+    }
+    .btn-hapus {
+      background-color: #ff4444;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-kembali {
+      display: inline-block;
+      background: #00ccff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>📁 Data Semua Transaksi (Admin)</h1>
+  <a href="/" class="btn-kembali">🏠 Kembali ke Dashboard</a>
+
+  <table>
+    <tr>
+      <th>Tanggal</th>
+      <th>Tipe</th>
+      <th>Deskripsi</th>
+      <th>Mata Uang</th>
+      <th>Jumlah</th>
+      <th>Aksi</th>
+    </tr>
+    {% for row in data %}
+    <tr>
+      <td>{{ row[1] }}</td>
+      <td>{{ row[2] }}</td>
+      <td>{{ row[3] }}</td>
+      <td>{{ row[4] }}</td>
+      <td>{{ row[5]|format_angka }}</td>
+      <td>
+        <form method="POST" action="/hapus" style="display:inline">
+          <input type="hidden" name="id" value="{{ row[0] }}">
+          <button type="submit" class="btn-hapus">Hapus</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

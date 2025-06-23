@@ -147,6 +147,21 @@ def download_excel():
     wb.save(nama_file)
     return send_file(nama_file, as_attachment=True)
 
+@app.route('/admin')
+def admin():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, tanggal, tipe, deskripsi, mata_uang, jumlah FROM transaksi ORDER BY id DESC")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    data = [
+        {'id': r[0], 'tanggal': r[1], 'tipe': r[2], 'deskripsi': r[3], 'mata_uang': r[4], 'jumlah': r[5]}
+        for r in rows
+    ]
+    return render_template('admin.html', data=data)
+
 # Auto create table saat run pertama kali
 def buat_table_transaksi():
     conn = get_connection()

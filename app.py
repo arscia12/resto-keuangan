@@ -10,13 +10,6 @@ app = Flask(__name__)
 FILE_CSV = 'keuangan.csv'
 MATA_UANG = ['USD', 'IDR', 'KHR']
 
-@app.template_filter('format_angka')
-def format_angka(value):
-    try:
-        return "{:,.2f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
-    except:
-        return value
-
 def buat_file():
     if not os.path.exists(FILE_CSV):
         with open(FILE_CSV, 'w', newline='') as f:
@@ -54,7 +47,7 @@ def saldo_per_mata_uang():
     saldo = defaultdict(float)
 
     if not os.path.exists(FILE_CSV):
-        return {'USD': 0, 'IDR': 0, 'KHR': 0}
+        return {mu: 0 for mu in MATA_UANG}
 
     with open(FILE_CSV, 'r') as f:
         reader = csv.DictReader(f)
@@ -107,8 +100,7 @@ def index():
                            omset=omset,
                            saldo=saldo,
                            saldo_per_mata_uang=saldo_per_mata_uang(),
-                           mata_uang=MATA_UANG,
-                           tanggal=datetime.now().strftime('%Y-%m-%d'))
+                           mata_uang=MATA_UANG)
 
 @app.route('/riwayat')
 def riwayat():

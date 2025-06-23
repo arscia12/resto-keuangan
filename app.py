@@ -23,7 +23,7 @@ DB_PARAMS = {
     'dbname': 'keuangan',
     'user': 'admin',
     'password': os.environ.get('DB_PASSWORD'),
-    'host': 'dpg-d1cgko6uk2gs73an2t50-a',  # ganti dengan hostmu
+    'host': 'dpg-d1cgko6uk2gs73an2t50-a',
     'port': 5432
 }
 
@@ -60,10 +60,7 @@ def get_transaksi_hari_ini():
 def get_semua_transaksi():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("""
-        SELECT tanggal, tipe, deskripsi, mata_uang, jumlah
-        FROM transaksi ORDER BY tanggal DESC
-    """)
+    cur.execute("SELECT tanggal, tipe, deskripsi, mata_uang, jumlah FROM transaksi")
     rows = [
         {'Tanggal': r[0], 'Tipe': r[1], 'Deskripsi': r[2], 'Mata Uang': r[3], 'Jumlah': r[4]}
         for r in cur.fetchall()
@@ -166,6 +163,27 @@ def download_excel():
 
     wb.save(nama_file)
     return send_file(nama_file, as_attachment=True)
+
+@app.route('/hapus', methods=['POST'])
+def hapus():
+    tanggal = request.form['tanggal']
+    tipe = request.form['tipe']
+    deskripsi = request.form['deskripsi']
+    mata_uang = request.form['mata_uang']
+    jumlah = float(request.form['jumlah'].replace(',', '.'))
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        DELETE FROM transaksi
+        WHERE tanggal = %s AND tipe = %s AND deskripsi = %s AND mata_uang = %s AND jumlah = %s
+        LIMIT 1
+    """, (tanggal, tipe, deskripsi, mata_uang, jumlah))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect(request.referrer)
 
 def buat_table_transaksi():
     conn = get_connection()

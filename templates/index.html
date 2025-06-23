@@ -122,22 +122,22 @@
       {% for m in mata_uang %}
         <div class="uang">
           <b>{{ m }}:</b><br>
-          + Pemasukan   : {{ pemasukan[m]|default(0) }}<br>
-          - Pengeluaran : {{ pengeluaran[m]|default(0) }}<br>
-          💰 Omset      : {{ omset[m]|default(0) }}<br><br>
+          + Pemasukan   : {{ pemasukan[m]|default(0)|float|round(2)|string|replace('.', ',') }}<br>
+          - Pengeluaran : {{ pengeluaran[m]|default(0)|float|round(2)|string|replace('.', ',') }}<br>
+          💰 Omset      : {{ omset[m]|default(0)|float|round(2)|string|replace('.', ',') }}<br><br>
         </div>
       {% endfor %}
     </div>
 
     <div class="card">
       <h2>💰 Saldo Utama (IDR)</h2>
-      <p class="uang">Rp {{ "{:,.2f}".format(saldo) }}</p>
+      <p class="uang">Rp {{ '{:,.2f}'.format(saldo).replace(',', 'X').replace('.', ',').replace('X', '.') }}</p>
 
       <h2 style="margin-top:30px;">💳 Saldo per Mata Uang</h2>
       <div class="uang">
-        USD: {{ saldo_per_mata_uang['USD']|default(0)|round(2) }}<br>
-        IDR : {{ saldo_per_mata_uang['IDR']|default(0)|round(2) }}<br>
-        KHR : {{ saldo_per_mata_uang['KHR']|default(0)|round(2) }}
+        USD: {{ saldo_per_mata_uang['USD']|default(0)|float|round(2)|string|replace('.', ',') }}<br>
+        IDR : {{ saldo_per_mata_uang['IDR']|default(0)|float|round(2)|string|replace('.', ',') }}<br>
+        KHR : {{ saldo_per_mata_uang['KHR']|default(0)|float|round(2)|string|replace('.', ',') }}
       </div>
     </div>
   </div>

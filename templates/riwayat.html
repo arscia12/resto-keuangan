@@ -2,24 +2,73 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Riwayat Hari Ini</title>
+  <title>Riwayat Transaksi Hari Ini</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { background: #1e1e2f; color: #fff; font-family: Arial; padding: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #444; padding: 10px; text-align: left; }
-    th { background: #0080ff; color: #fff; }
-    a.button {
-      background: #00ccff; padding: 10px 20px; color: white;
-      text-decoration: none; border-radius: 6px;
+    body {
+      background: #1e1e2f;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      color: #00ffff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #2a2a3d;
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
+    .btn {
+      padding: 8px 15px;
+      margin: 5px 0;
+      text-decoration: none;
+      display: inline-block;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .btn-kembali {
+      background: #00c8ff;
+      color: white;
+    }
+    .btn-download {
+      background: #28a745;
+      color: white;
+    }
+    .btn-hapus {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
-  <h1>📋 Riwayat Transaksi Hari Ini</h1>
+  <h1>📘 Riwayat Transaksi Hari Ini</h1>
 
-  <a href="/" class="button">⬅️ Kembali</a>
-  <a href="/download" class="button" style="margin-left: 10px;">⬇️ Download Excel</a>
+  <div class="top-actions">
+    <a href="/" class="btn btn-kembali">⬅️ Kembali</a>
+    <a href="/download" class="btn btn-download">📥 Download Excel</a>
+  </div>
 
   <table>
     <thead>
@@ -29,6 +78,7 @@
         <th>Deskripsi</th>
         <th>Mata Uang</th>
         <th>Jumlah</th>
+        <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -38,12 +88,19 @@
         <td>{{ row['Tipe'] }}</td>
         <td>{{ row['Deskripsi'] }}</td>
         <td>{{ row['Mata Uang'] }}</td>
-        <td>{{ row['Jumlah'] }}</td>
+        <td>{{ "{:,.2f}".format(row['Jumlah']|float).replace(",", "X").replace(".", ",").replace("X", ".") }}</td>
+        <td>
+          <form method="POST" action="/hapus" style="margin: 0;">
+            <input type="hidden" name="tanggal" value="{{ row['Tanggal'] }}">
+            <input type="hidden" name="tipe" value="{{ row['Tipe'] }}">
+            <input type="hidden" name="deskripsi" value="{{ row['Deskripsi'] }}">
+            <input type="hidden" name="mata_uang" value="{{ row['Mata Uang'] }}">
+            <input type="hidden" name="jumlah" value="{{ row['Jumlah'] }}">
+            <button type="submit" class="btn-hapus">Hapus</button>
+          </form>
+        </td>
       </tr>
       {% endfor %}
-      {% if not data %}
-      <tr><td colspan="5">Tidak ada transaksi hari ini.</td></tr>
-      {% endif %}
     </tbody>
   </table>
 </body>

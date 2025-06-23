@@ -138,6 +138,28 @@ def download_excel():
     wb.save(nama_file)
     return send_file(nama_file, as_attachment=True)
 
+@app.route('/hapus', methods=['POST'])
+def hapus():
+    target = {
+        'Tanggal': request.form['tanggal'],
+        'Tipe': request.form['tipe'],
+        'Deskripsi': request.form['deskripsi'],
+        'Mata Uang': request.form['mata_uang'],
+        'Jumlah': request.form['jumlah'],
+    }
+
+    if os.path.exists(FILE_CSV):
+        with open(FILE_CSV, 'r') as f:
+            rows = list(csv.DictReader(f))
+        with open(FILE_CSV, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+            writer.writeheader()
+            for row in rows:
+                if not all(str(row[k]) == str(target[k]) for k in target):
+                    writer.writerow(row)
+
+    return redirect('/riwayat')
+
 @app.route('/history')
 def history():
     rows = []

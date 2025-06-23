@@ -57,6 +57,21 @@ def get_transaksi_hari_ini():
     conn.close()
     return rows
 
+def get_semua_transaksi():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT tanggal, tipe, deskripsi, mata_uang, jumlah
+        FROM transaksi ORDER BY tanggal DESC
+    """)
+    rows = [
+        {'Tanggal': r[0], 'Tipe': r[1], 'Deskripsi': r[2], 'Mata Uang': r[3], 'Jumlah': r[4]}
+        for r in cur.fetchall()
+    ]
+    cur.close()
+    conn.close()
+    return rows
+
 def ringkasan_hari_ini():
     tanggal = datetime.now().strftime('%Y-%m-%d')
     pemasukan = defaultdict(float)
@@ -124,6 +139,11 @@ def riwayat():
     data = get_transaksi_hari_ini()
     return render_template('riwayat.html', data=data)
 
+@app.route('/admin')
+def admin():
+    data = get_semua_transaksi()
+    return render_template('admin.html', data=data)
+
 @app.route('/download')
 def download_excel():
     rows = get_transaksi_hari_ini()
@@ -147,22 +167,6 @@ def download_excel():
     wb.save(nama_file)
     return send_file(nama_file, as_attachment=True)
 
-@app.route('/admin')
-def admin():
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT id, tanggal, tipe, deskripsi, mata_uang, jumlah FROM transaksi ORDER BY id DESC")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    data = [
-        {'id': r[0], 'tanggal': r[1], 'tipe': r[2], 'deskripsi': r[3], 'mata_uang': r[4], 'jumlah': r[5]}
-        for r in rows
-    ]
-    return render_template('admin.html', data=data)
-
-# Auto create table saat run pertama kali
 def buat_table_transaksi():
     conn = get_connection()
     cur = conn.cursor()

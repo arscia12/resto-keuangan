@@ -32,7 +32,7 @@
           <td>{{ row['Jumlah']|format_angka }}</td>
           <td>
             <form action="/hapus" method="POST">
-              <input type="hidden" name="id" value="{{ row['ID'] }}">
+              <input type="hidden" name="id" value="{{ row['id'] }}">
               <button class="btn btn-danger btn-sm">Hapus</button>
             </form>
           </td>

@@ -175,6 +175,33 @@ def hapus():
     conn.close()
     return redirect(request.referrer)
 
+# Tambahkan route ini ke app.py
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit(id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        tipe = request.form['tipe']
+        deskripsi = request.form['deskripsi']
+        mata_uang = request.form['mata_uang']
+        jumlah = float(request.form['jumlah'].replace(',', '.'))
+        cur.execute("""
+            UPDATE transaksi
+            SET tipe = %s, deskripsi = %s, mata_uang = %s, jumlah = %s
+            WHERE id = %s
+        """, (tipe, deskripsi, mata_uang, jumlah, id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect('/')
+
+    cur.execute("SELECT tipe, deskripsi, mata_uang, jumlah FROM transaksi WHERE id = %s", (id,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    return render_template("edit.html", id=id, data=row, mata_uang=MATA_UANG)
+
 
 def buat_table_transaksi():
     conn = get_connection()

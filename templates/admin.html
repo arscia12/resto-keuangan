@@ -29,12 +29,13 @@
           <td>{{ row['Deskripsi'] }}</td>
           <td>{{ row['Mata Uang'] }}</td>
           <td>{{ row['Jumlah']|format_angka }}</td>
-          <td>
-            <form action="/hapus" method="POST">
-              <input type="hidden" name="id" value="{{ row['id'] }}">
-              <button class="btn btn-danger btn-sm">Hapus</button>
-            </form>
-          </td>
+            <td>
+              <a href="/edit/{{ row['id'] }}" class="btn btn-warning btn-sm mb-1">✏️ Edit</a>
+              <form action="/hapus" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus?')">
+                <input type="hidden" name="id" value="{{ row['id'] }}">
+                <button class="btn btn-danger btn-sm">Hapus</button>
+              </form>
+            </td>
         </tr>
         {% endfor %}
       </tbody>

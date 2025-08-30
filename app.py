@@ -42,12 +42,15 @@ def simpan_transaksi(tipe, deskripsi, mata_uang, jumlah):
     conn.close()
 
 def get_transaksi_hari_ini():
+    """Tampilkan transaksi hari ini: terbaru dulu (tanggal DESC, lalu id DESC)."""
     tanggal = datetime.now().strftime('%Y-%m-%d')
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
         SELECT id, tanggal, tipe, deskripsi, mata_uang, jumlah
-        FROM transaksi WHERE tanggal = %s
+        FROM transaksi
+        WHERE tanggal = %s
+        ORDER BY tanggal DESC, id DESC
     """, (tanggal,))
     rows = [
         {'id': r[0], 'Tanggal': r[1], 'Tipe': r[2], 'Deskripsi': r[3], 'Mata Uang': r[4], 'Jumlah': r[5]}
@@ -58,9 +61,14 @@ def get_transaksi_hari_ini():
     return rows
 
 def get_semua_transaksi():
+    """Tampilkan seluruh transaksi: terbaru dulu (tanggal DESC, lalu id DESC)."""
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, tanggal, tipe, deskripsi, mata_uang, jumlah FROM transaksi")
+    cur.execute("""
+        SELECT id, tanggal, tipe, deskripsi, mata_uang, jumlah
+        FROM transaksi
+        ORDER BY tanggal DESC, id DESC
+    """)
     rows = [
         {'id': r[0], 'Tanggal': r[1], 'Tipe': r[2], 'Deskripsi': r[3], 'Mata Uang': r[4], 'Jumlah': r[5]}
         for r in cur.fetchall()
@@ -133,17 +141,17 @@ def index():
 
 @app.route('/riwayat')
 def riwayat():
-    data = get_transaksi_hari_ini()
+    data = get_transaksi_hari_ini()     # sudah terurut terbaru dulu
     return render_template('riwayat.html', data=data)
 
 @app.route('/admin')
 def admin():
-    data = get_semua_transaksi()
+    data = get_semua_transaksi()        # sudah terurut terbaru dulu
     return render_template('admin.html', data=data)
 
 @app.route('/download')
 def download_excel():
-    rows = get_transaksi_hari_ini()
+    rows = get_transaksi_hari_ini()     # ikut urutan terbaru dulu
     if not rows:
         return "Tidak ada data hari ini.", 404
 
@@ -175,7 +183,6 @@ def hapus():
     conn.close()
     return redirect(request.referrer)
 
-# Tambahkan route ini ke app.py
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
     conn = get_connection()
@@ -194,14 +201,14 @@ def edit(id):
         conn.commit()
         cur.close()
         conn.close()
-        return redirect('/')
+        # lebih nyaman balik ke halaman admin agar langsung lihat daftar
+        return redirect('/admin')
 
     cur.execute("SELECT tipe, deskripsi, mata_uang, jumlah FROM transaksi WHERE id = %s", (id,))
     row = cur.fetchone()
     cur.close()
     conn.close()
     return render_template("edit.html", id=id, data=row, mata_uang=MATA_UANG)
-
 
 def buat_table_transaksi():
     conn = get_connection()
